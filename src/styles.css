@@ -1,0 +1,59 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  --base-color: #fff;
+  --dark-color: #2a3443;
+  --shade-color: #5e6673;
+  --success-color: #f0f8f1;
+  --warning-color: #fbeeec;
+  --color-background: #db960a;
+  --light-background: #f4f5f7;
+  --spacing: 16px;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Roboto, Source Sans Pro, sans-serif;
+  margin: 0;
+  padding: 0;
+  color: var(--dark-color);
+  font-size: 18px;
+  line-height: 1.5rem;
+}
+
+[hidden] {
+  display: none;
+}
+
+h1, nav {
+  display: inline-block;
+}
+
+h1 {
+  padding-right: 2em;
+}
+
+header,
+main,
+nav {
+  padding: var(--spacing);
+}
+
+header {
+  background: var(--color-background);
+  color: var(--dark-color);
+  box-shadow: 0px 4px 8px #888888;
+}
+
+@media screen and (max-width: 1000px) {
+  vaadin-tabs {
+    display: none;
+  }
+}
+
+vaadin-tab {
+  color: var(--dark-color);
+}
