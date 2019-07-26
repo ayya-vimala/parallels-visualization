@@ -65,16 +65,18 @@ class VisualView extends BaseView {
               "sn": "Samyutta Nikāya",
               "snp": "Suttanipāta",
               "t": "Chinese Suttas",
+              "thi": "Therīapadāna",
               "tha": "Therāpadāna",
               "thag": "Theragāthā",
-              "thig": "Puggalapaññatti",
+              "thig": "Therīgāthā",
               "ud": "Udāna",
               "uf": "Uighur fragments",
               "up": "Upāyikā",
               "uv": "Udānavarga",
               "uvs": "Udānavarga de Subaši",
               "vb": "Vibhaṅga",
-              "vv": "Vimānavatthu"};
+              "vv": "Vimānavatthu",
+              "other": "Other"};
   this.colors = ['rgb(23, 190, 207)',
                 'rgb(31, 119, 180)',
                 'rgb(255,127,14)',
@@ -149,16 +151,15 @@ class VisualView extends BaseView {
     let chart = this.querySelector('#parallels-chart');
     chart.style.width = windowWidth + 'px';
     fetch(url).then(r => r.json()).then(sankey_data => {
-      sankey_data.sort();
       for (let i = 0; i < sankey_data.length; i++) {
+        sankey_data[i][0] = `${sankey_data[i][0]}`;
+        sankey_data[i][1] = `${sankey_data[i][1]}`;
         if (this.labels[sankey_data[i][0]]) {
           sankey_data[i][0] = `${sankey_data[i][0]} ${this.labels[sankey_data[i][0]]}`;
         };
-        if (this.labels[sankey_data[i][1]]) {
-          sankey_data[i][1] = `${sankey_data[i][1]} ${this.labels[sankey_data[i][1]]}`;
+        if (this.labels[sankey_data[i][1].slice(3,)]) {
+          sankey_data[i][1] = `${this.labels[sankey_data[i][1].slice(3,)]}`;
         };
-        sankey_data[i][0] = `${sankey_data[i][0]}`;
-        sankey_data[i][1] = `${sankey_data[i][1]}`;
       }
 
       let data = new google.visualization.DataTable();
