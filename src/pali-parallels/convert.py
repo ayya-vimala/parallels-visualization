@@ -9,66 +9,10 @@ import re
 import json
 import itertools
 
-collections_dic = {
-              "dn": "Digha Nikaya",
-              "da": "Dīrghāgama",
-              "mn": "Majjhima Nikaya",
-              "ma": "Madhyamāgama",
-              "sn": "Samyutta Nikaya",
-              "sa": "Saṃyuktāgama",
-              "an": "Anguttara Nikaya",
-              "ea": "Ekottarikāgama",
-              "kp": "Khuddakapāṭha",
-				"dhp": "Dhammapada",
-				"ud": "Udāna",
-				"iti": "Itivuttaka",
-				"snp": "Suttanipāta",
-				"vv": "Vimānavatthu",
-				"pv": "Petavatthu",
-				"thag": "Theragāthā",
-				"thig": "Therīgāthā",
-				"tha": "Therāpadāna",
-				"thi": "Therīapadāna",
-				"bv": "Buddhavaṃsa",
-				"cp": "Cariyāpiṭaka",
-				"ja": "Jātaka",
-				"mnd": "Mahāniddesa",
-				"cnd": "Cūḷaniddesa",
-				"ps": "Paṭisambhidāmagga",
-				"ne": "Netti",
-				"pe": "Peṭakopadesa",
-				"mil": "Milindapañha",
-				"t": "Other Chinese Suttas",
-				"d": "Tibetan Suttas",
-				"pli": "Pali Vinaya",
-				"lzh": "Chinese Vinaya",
-				"san": "Sanskrit Vinaya"
-				}
 
 collectionsList = ["dn", "da", "mn", "ma", "sn", "sa", "an", "ea", "kp","dhp","ud","iti","snp","vv","pv","thag","thig","tha","thi","bv","cp","ja","mnd","cnd","ps","ne","pe","mil","t","d","pli","lzh","san"]
 
-kncollections_dic = {
-			"kp": "Khuddakapāṭha",
-			"dhp": "Dhammapada",
-			"ud": "Udāna",
-			"iti": "Itivuttaka",
-			"snp": "Suttanipāta",
-			"vv": "Vimānavatthu",
-			"pv": "Petavatthu",
-			"thag": "Theragāthā",
-			"thig": "Therīgāthā",
-			"tha": "Therāpadāna",
-			"thi": "Therīapadāna",
-			"bv": "Buddhavaṃsa",
-			"cp": "Cariyāpiṭaka",
-			"ja": "Jātaka",
-			"mnd": "Mahāniddesa",
-			"cnd": "Cūḷaniddesa",
-			"ps": "Paṭisambhidāmagga",
-			"ne": "Netti",
-			"pe": "Peṭakopadesa",
-			"mil": "Milindapañha",
-			}
+kncollections = ["kp", "dhp", "ud", "iti", "snp", "vv", "pv", "thag", "thig", "tha-ap", "thi-ap", "bv", "cp", "ja", "mnd", "cnd", "ps", "ne", "pe", "mil"]
 
 othercollections = { "arv": "Arthaviniścaya",
               "avs": "Avadānaśataka",
@@ -94,6 +38,56 @@ othercollections = { "arv": "Arthaviniścaya",
               "vb": "Vibhaṅga",
               }
 
+def buildKnJson():
+	sankeylist = []
+	for collection in kncollections:
+		template = re.compile(r'^('+collection+r'\d+)')
+		jsonlist = []
+
+		with open('parallels.json') as parallels_file:
+			data = json.load(parallels_file)
+			for p in data:
+
+				try:
+					plist = p['parallels']
+				except:
+					try:
+						plist = p['mentions']
+					except:
+						plist = p['retells']
+				foundvalue = [item for item in plist if template.match(item)]
+
+				if foundvalue:
+					for item in plist:
+						if item != foundvalue:
+							actualfoundvalue = foundvalue[0].split('#')[0]
+							cfoundvalue = actualfoundvalue.split('.')[0]
+							
+							cfoundvalue = re.split(r'[0-9]',cfoundvalue)[0]
+
+							citem = item.split('#')[0].strip('~')
+							if (citem != actualfoundvalue and len(citem) < 15):
+								citem = re.split(r'[0-9]',citem)[0]
+								citem = citem.split('-')[0]
+								jsonlist.append([cfoundvalue,citem])
+
+		jsonlist = sortList(jsonlist)
+		for item in jsonlist:
+			counter = jsonlist.count(item)
+			sankeylist.append([item[0],item[1],counter])
+
+	sankeylist = addBlankEntries(sankeylist,'kn')
+
+	newsankeylist = []
+	for item in sankeylist:
+		newsankeylist.append([format(kncollections.index(item[0]), '02d') +' '+item[0],item[1],item[2]])
+	newsankeylist = sorted(newsankeylist)		
+	dedup = [newsankeylist[i] for i in range(len(sankeylist)) if i == 0 or newsankeylist[i] != newsankeylist[i-1]]
+
+	with open('kn.json', 'w') as outfile:
+		json.dump(dedup, outfile, indent=4)
+
+	return newsankeylist
 
 
 def buildJson(collection,nrs0):
@@ -116,8 +110,9 @@ def buildJson(collection,nrs0):
 			if foundvalue:
 				for item in plist:
 					if item != foundvalue:
-						cfoundvalue = foundvalue[0].split('#')[0].strip('~')
-						cfoundvalue = cfoundvalue.split('.')[0]
+						actualfoundvalue = foundvalue[0].split('#')[0]
+						cfoundvalue = actualfoundvalue.split('.')[0]
+						
 						if nrs0 == 1:
 							if re.match(r'^'+collection+r'[0-9]$',cfoundvalue):
 								cfoundvalue = collection+'0' + cfoundvalue[2]
@@ -128,7 +123,7 @@ def buildJson(collection,nrs0):
 								cfoundvalue = collection+'0' + cfoundvalue[2] + cfoundvalue[3]
 
 						citem = item.split('#')[0].strip('~')
-						if (citem != cfoundvalue and len(citem) < 15):
+						if (citem != actualfoundvalue and len(citem) < 15):
 							citem = re.split(r'[0-9]',citem)[0]
 							citem = citem.split('-')[0]
 							jsonlist.append([cfoundvalue,citem])
@@ -140,6 +135,7 @@ def buildJson(collection,nrs0):
 		counter = jsonlist.count(item)
 		sankeylist.append([item[0],item[1],counter])
 
+	sankeylist = addBlankEntries(sankeylist,collection)
 	sankeylist = sorted(sankeylist)
 	dedup = [sankeylist[i] for i in range(len(sankeylist)) if i == 0 or sankeylist[i] != sankeylist[i-1]]
 
@@ -158,11 +154,29 @@ def sortList(inputlist):
 		outputlist.append([item[0],newItem1])
 	return sorted(outputlist)
 
+def addBlankEntries(inputlist,collection):
+	colnr = collection+'01'
+	if collection == 'kn':
+		colnr = 'kp'
+	if collection == 'mn':
+		colnr = 'mn001'
+	if collection == 'sutta':
+		colnr = '1 dn'
+	targetnrlist = []
+	for item in inputlist:
+		if item[0] == colnr:
+			targetnrlist.append(item[1][3:])
+	for item in collectionsList:
+		if item not in targetnrlist:
+			inputlist.append([colnr,format(collectionsList.index(item), '02d') +' '+ item,0])
+	return inputlist
 
-dnlist = buildJson('dn',1);
-anlist = buildJson('an',1);
-snlist = buildJson('sn',1);
-mnlist = buildJson('mn',2);
+
+dnlist = buildJson('dn',1)
+anlist = buildJson('an',1)
+snlist = buildJson('sn',1)
+mnlist = buildJson('mn',2)
+knlist = buildKnJson()
 
 totalslist = []
 
@@ -174,6 +188,8 @@ for item in snlist:
 	totalslist.append(['3 sn',item[1]])
 for item in anlist:
 	totalslist.append(['4 an',item[1]])
+for item in knlist:
+	totalslist.append(['5 kn',item[1]])
 
 totalscounted = []
 
@@ -181,6 +197,7 @@ for item in totalslist:
 	counter = totalslist.count(item)
 	totalscounted.append([item[0],item[1],counter])
 
+totalscounted = addBlankEntries(totalscounted,'sutta')
 totalscounted = sorted(totalscounted)
 dedup = [totalscounted[i] for i in range(len(totalscounted)) if i == 0 or totalscounted[i] != totalscounted[i-1]]
 
