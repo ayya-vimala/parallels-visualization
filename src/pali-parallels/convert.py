@@ -10,32 +10,24 @@ import json
 import itertools
 
 
-collectionsList = ["dn", "da", "mn", "ma", "sn", "sa", "an", "ea", "kp","dhp","ud","iti","snp","vv","pv","thag","thig","tha","thi","bv","cp","ja","mnd","cnd","ps","ne","pe","mil","t","d","pli","lzh","san"]
+collectionsList = ["dn", "da", "mn", "ma", "sn", "sa", "an", "ea", "kp","dhp","ud","iti","snp","vv","pv","thag","thig","tha","thi","bv","cp","ja","mnd","cnd","ps","ne","pe","mil","t","pli","lzh","san"]
 
 kncollections = ["kp", "dhp", "ud", "iti", "snp", "vv", "pv", "thag", "thig", "tha-ap", "thi-ap", "bv", "cp", "ja", "mnd", "cnd", "ps", "ne", "pe", "mil"]
 
-othercollections = { "arv": "Arthaviniścaya",
-              "avs": "Avadānaśataka",
-              "divy": "Divyāvadāna",
-              "ds": "Dhammasaṅgaṇī",
+abcollections = ["ds", "vb", "dt", "pp", "kv", "ya", "patthana"]
+
+sancollections = ["sf", "sht", "arv", "avs", "divy", "lal", "mkv", "sag", "sbh", 'uv', 'uvs']
+
+tibcollections = ["d","up", "uv-kg"]
+
+othercollections = { 
               "g": "Gāndhārī Dharmapada 3",
               "gdhp": "Gāndhārī Dharmapada",
               "gf": "Gāndhārī fragments",
               "kf": "Khotanese fragments",
-              "kv": "Kathāvatthu",
-              "lal": "Lalitavistara",
               "pdhp": "Patna Dharmapada",
               "pf": "Prākrit fragments",
-              "pp": "Puggalapaññatti",
-              "sag": "Śarīrārthagāthā",
-              "sf": "Sanskrit Fragments",
-              "sht": "SHT fragments",
-              "ud": "Udāna",
               "uf": "Uighur fragments",
-              "up": "Upāyikā",
-              "uv": "Udānavarga",
-              "uvs": "Udānavarga de Subaši",
-              "vb": "Vibhaṅga",
               }
 
 def buildKnJson():
@@ -68,7 +60,8 @@ def buildKnJson():
 							citem = item.split('#')[0].strip('~')
 							if (citem != actualfoundvalue and len(citem) < 15):
 								citem = re.split(r'[0-9]',citem)[0]
-								citem = citem.split('-')[0]
+								if (not citem.startswith("uv")):
+									citem = citem.split('-')[0]
 								jsonlist.append([cfoundvalue,citem])
 
 		jsonlist = sortList(jsonlist)
@@ -125,7 +118,8 @@ def buildJson(collection,nrs0):
 						citem = item.split('#')[0].strip('~')
 						if (citem != actualfoundvalue and len(citem) < 15):
 							citem = re.split(r'[0-9]',citem)[0]
-							citem = citem.split('-')[0]
+							if (not citem.startswith("uv")):
+								citem = citem.split('-')[0]
 							jsonlist.append([cfoundvalue,citem])
 
 	sankeylist = []
@@ -151,6 +145,12 @@ def sortList(inputlist):
 		newItem1 = '99_other'
 		if item[1] in collectionsList:
 			newItem1 = format(collectionsList.index(item[1]), '02d') +' '+ item[1]
+		if item[1] in sancollections:
+			newItem1 = "40_sanskrit"
+		if item[1] in tibcollections:
+			newItem1 = "60_tibetan"
+		if item[1] in abcollections:
+			newItem1 = "70_abhidhamma"
 		outputlist.append([item[0],newItem1])
 	return sorted(outputlist)
 
